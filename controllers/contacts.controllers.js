@@ -2,8 +2,10 @@ const { CustomError } = require("../helpers/index");
 const { Contact } = require("../models/contacts");
 
 async function getContacts(req, res, next) {
-  const contacts = await Contact.find({});
-  if (!contacts) {
+  const { limit = 20, page = 1 } = req.query;
+  const skip = (page - 1) * limit;
+  const contacts = await Contact.find({}).skip(skip).limit(limit);
+  if (contacts.length === 0) {
     next(new CustomError(404, "Contact not found"));
   }
   res.status(200).json(contacts);
@@ -19,9 +21,13 @@ async function getContact(req, res, next) {
 }
 
 async function createContact(req, res, next) {
-  const { body } = await req;
-  const newContact = await Contact.create(body);
-  res.status(201).json(newContact);
+  const { _id } = req.user;
+
+  const newContact = await Contact.create({
+    ...req.body,
+    owner: _id,
+  });
+  return res.status(201).json(newContact);
 }
 
 async function deleteContact(req, res, next) {
