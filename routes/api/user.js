@@ -4,11 +4,18 @@ const {
   getContacts,
   current,
   updateAvatar,
+  verifyMail,
+  repeatVerifyMail,
 } = require("../../controllers/user.controller");
 
-const { auth, upload, resizeAvatar } = require("../../middlewares/index");
+const {
+  auth,
+  upload,
+  resizeAvatar,
+  validateBody,
+} = require("../../middlewares/index");
 const { tryCatchWrapper } = require("../../helpers");
-
+const { repeatVerifyMailSchema } = require("../../schemas/users");
 const userRouter = express.Router();
 
 userRouter.post(
@@ -29,5 +36,10 @@ userRouter.patch(
   tryCatchWrapper(resizeAvatar),
   tryCatchWrapper(updateAvatar)
 );
-
+userRouter.get("/verify/:verificationToken", tryCatchWrapper(verifyMail));
+userRouter.post(
+  "/verify/",
+  validateBody(repeatVerifyMailSchema),
+  tryCatchWrapper(repeatVerifyMail)
+);
 module.exports = { userRouter };
